@@ -1,10 +1,8 @@
 import tkinter as tk
 from tkinter import ttk
-import requests
-import sys
-print(sys.path)
+from test_weather_app import get_weather
 
-def get_weather():
+def update_weather_labels():
     city = city_entry.get()
     unit = unit_var.get()
     
@@ -13,12 +11,9 @@ def get_weather():
     else:
         unit = "imperial"
         
-    api_key = "493960142acebccb3ba21c30f34bd019"  # Your API key
-    url = f"http://api.openweathermap.org/data/2.5/weather?q={city}&appid={api_key}&units={unit}"
-    response = requests.get(url)
-    data = response.json()
+    data = get_weather(city, unit)
     
-    if data["cod"] != "404":
+    if data.get("cod") != "404":
         temperature_label.config(text=f"Temperature: {data['main']['temp']} °{unit_var.get()[0]}")
         humidity_label.config(text=f"Humidity: {data['main']['humidity']} %")
         wind_speed_label.config(text=f"Wind Speed: {data['wind']['speed']} m/s")
@@ -48,7 +43,7 @@ unit_label.grid(row=1, column=0, padx=5, pady=5)
 unit_option = ttk.OptionMenu(frame, unit_var, "Celsius", "Celsius", "Fahrenheit")
 unit_option.grid(row=1, column=1, padx=5, pady=5)
 
-weather_button = ttk.Button(frame, text="Show Weather", command=get_weather)
+weather_button = ttk.Button(frame, text="Show Weather", command=update_weather_labels)
 weather_button.grid(row=2, columnspan=2, padx=5, pady=5)
 
 temperature_label = ttk.Label(frame, text="Temperature:")

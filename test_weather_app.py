@@ -1,10 +1,11 @@
 import unittest
 from unittest.mock import patch, MagicMock
-from app import get_weather, temperature_label, humidity_label, wind_speed_label
+from weather_logic import get_weather
+
 
 class TestWeatherApp(unittest.TestCase):
     
-    @patch('app.requests.get')
+    @patch('weather_logic.requests.get')
     def test_get_weather_success(self, mock_get):
         # Mock the response from the API
         mock_response = MagicMock()
@@ -21,23 +22,17 @@ class TestWeatherApp(unittest.TestCase):
         mock_get.return_value = mock_response
         
         # Test the function with a valid city
-        city_entry = MagicMock()
-        city_entry.get.return_value = "London"
+        city = "London"
+        unit = "Celsius"
         
-        unit_var = MagicMock()
-        unit_var.get.return_value = "Celsius"
+        data = get_weather(city, unit)
         
-        get_weather()
-        
-        expected_temperature = "Temperature: 20 °C"
-        expected_humidity = "Humidity: 50 %"
-        expected_wind_speed = "Wind Speed: 10 m/s"
-        
-        temperature_label.config.assert_called_once_with(text=expected_temperature)
-        humidity_label.config.assert_called_once_with(text=expected_humidity)
-        wind_speed_label.config.assert_called_once_with(text=expected_wind_speed)
-    
-    @patch('app.requests.get')
+        # Check if data is returned correctly
+        self.assertEqual(data["main"]["temp"], 20)
+        self.assertEqual(data["main"]["humidity"], 50)
+        self.assertEqual(data["wind"]["speed"], 10)
+
+    @patch('weather_logic.requests.get')
     def test_get_weather_city_not_found(self, mock_get):
         # Mock the response from the API
         mock_response = MagicMock()
@@ -47,15 +42,13 @@ class TestWeatherApp(unittest.TestCase):
         mock_get.return_value = mock_response
         
         # Test the function with a city that is not found
-        city_entry = MagicMock()
-        city_entry.get.return_value = "InvalidCityName"
+        city = "InvalidCityName"
+        unit = "Celsius"
         
-        unit_var = MagicMock()
-        unit_var.get.return_value = "Celsius"
+        data = get_weather(city, unit)
         
-        get_weather()
-        
-        temperature_label.config.assert_called_once_with(text="City not found")
+        # Check if "cod" is "404" indicating city not found
+        self.assertEqual(data["cod"], "404")
 
 if __name__ == '__main__':
     unittest.main()
